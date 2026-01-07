@@ -1,0 +1,44 @@
+{
+  "name": "many-to-many-cx",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@clayui/button": "^3.156.0",
+    "@clayui/core": "^3.156.0",
+    "@clayui/css": "^3.154.0",
+    "@clayui/drop-down": "^3.156.0",
+    "@clayui/form": "^3.156.0",
+    "@clayui/icon": "^3.144.1",
+    "@clayui/label": "^3.156.0",
+    "@clayui/list": "^3.156.0",
+    "@clayui/modal": "^3.156.0",
+    "@clayui/pagination": "^3.156.0",
+    "@clayui/pagination-bar": "^3.156.0",
+    "@clayui/toolbar": "^3.156.0",
+
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "homepage": "https://fabian-bouche-liferay.github.io/many-to-many-cx/",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "depcheck": "^1.4.7",
+    "vite": "^6.1.1"
+  }
+}

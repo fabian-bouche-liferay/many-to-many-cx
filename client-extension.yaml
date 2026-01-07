@@ -1,0 +1,8 @@
+assemble:
+    - from: build/static
+      into: static
+many-to-many-cx-js-import-maps-entry:
+    bareSpecifier: manyToManyCX
+    name: Many to Many CX JS Import Maps Entry
+    type: jsImportMapsEntry
+    url: assets/index-*.js
