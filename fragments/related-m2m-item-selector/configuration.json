@@ -1,0 +1,27 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"defaultValue": "",
+					"label": "Object Relationship name",
+					"name": "objectRelationshipName",
+					"type": "text"
+				},
+				{
+					"defaultValue": "",
+					"label": "Current Object API Path",
+					"name": "currentObjectAPIPath",
+					"type": "text"
+				},
+				{
+					"defaultValue": "",
+					"label": "Related Object API Path",
+					"name": "relatedObjectAPIPath",
+					"type": "text"
+				}
+			],
+			"label": "options"
+		}
+	]
+}
