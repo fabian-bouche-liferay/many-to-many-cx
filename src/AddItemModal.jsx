@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Modal, { useModal } from "@clayui/modal";
-import Button from "@clayui/button";
+import ClayButton from "@clayui/button";
 import List from "@clayui/list";
+import PaginationBar from '@clayui/pagination-bar';
+import {ClayPaginationWithBasicItems} from '@clayui/pagination';
+import Icon from "@clayui/icon";
 
 const AddItemModal = ({
   addSelectedItems,
@@ -10,6 +13,12 @@ const AddItemModal = ({
   addItemToggle,
   setAddItemToggle,
   addItem,
+  availableItemsCurrentPage,
+  setAvailableItemsCurrentPage,
+  availableItemsLastPage,
+  availableItemsPageSize,
+  setAvailableItemsPageSize,
+  totalAvailableItemsAmount
 }) => {
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
@@ -46,29 +55,64 @@ const AddItemModal = ({
           <Modal.Body>
             <List className="mt-4" showQuickActionsOnHover={false}>
               {availableRelatedObjectEntries.map((item) => (
-                <List.Item
-                    style={{cursor: 'pointer'}}
-                    key={item.id}
-                    active={item.active}
-                    flex
-                    onClick={() => setActive(item.id, !item.active)}
-                >
-                  <List.ItemField expand>
-                    <List.ItemTitle>{item.title}</List.ItemTitle>
-                  </List.ItemField>
-                </List.Item>
+                item.alreadyRelated ? (
+                    <List.Item
+                        disabled={true}
+                        key={item.id}
+                        flex
+                    >
+                        <List.ItemField expand>
+                            <List.ItemTitle className="text-weight-normal"><em>{item.title}</em></List.ItemTitle>
+                            <List.ItemText className="text-weight-light"><em>Already selected</em></List.ItemText>
+                        </List.ItemField>
+                    </List.Item>
+                ) : (
+                    <List.Item
+                        style={{cursor: 'pointer'}}
+                        key={item.id}
+                        active={item.active}
+                        flex
+                        onClick={() => setActive(item.id, true)}
+                    >
+                        <List.ItemField expand>
+                            <List.ItemTitle>{item.title}</List.ItemTitle>
+                        </List.ItemField>
+                    </List.Item>
+                )
               ))}
             </List>
+            <PaginationBar>
+                <PaginationBar.DropDown
+                items={[5, 10, 20, 50].map((n) => ({
+                    label: String(n),
+                    onClick: () => setAvailableItemsPageSize(n),
+                }))}
+                trigger={
+                    <ClayButton displayType="unstyled">
+                        {availableItemsPageSize} items per page <Icon symbol="caret-double-l" />
+                    </ClayButton>
+                }
+                />
+
+                <PaginationBar.Results>Listing {totalAvailableItemsAmount} Items</PaginationBar.Results>
+
+                <ClayPaginationWithBasicItems
+                    active={availableItemsCurrentPage}
+                    onActiveChange={(page) => {setAvailableItemsCurrentPage(page)}}
+                    ellipsisProps={{ "aria-label": "More", title: "More" }}
+                    totalPages={availableItemsLastPage}
+                />
+            </PaginationBar>  
           </Modal.Body>
 
           <Modal.Footer
             first={
-              <Button displayType="secondary" onClick={() => setAddItemToggle(false)}>
+              <ClayButton displayType="secondary" onClick={() => setAddItemToggle(false)}>
                 Cancel
-              </Button>
+              </ClayButton>
             }
             last={
-              <Button
+              <ClayButton
                 displayType="primary"
                 disabled={isAddDisabled}
                 onClick={() => {
@@ -80,7 +124,7 @@ const AddItemModal = ({
                 }}
               >
                 {addLabel}
-              </Button>
+              </ClayButton>
             }
           />
         </Modal>

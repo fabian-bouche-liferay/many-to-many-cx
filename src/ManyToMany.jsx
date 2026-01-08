@@ -7,6 +7,9 @@ import {ClayInput} from '@clayui/form';
 import {ClayDropDownWithItems} from '@clayui/drop-down';
 import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 
+import PaginationBar from '@clayui/pagination-bar';
+import {ClayPaginationWithBasicItems} from '@clayui/pagination';
+
 import '@clayui/css/lib/css/atlas.css';
 import ObjectService from "./services/ObjectService";
 import AddItemModal from "./AddItemModal";
@@ -21,6 +24,18 @@ const ManyToMany = ({ baseURL, currentObjectEntryId, currentObjectEntryERC, curr
 
     const [ scopeKey, setScopeKey ] = useState(null);
 
+    const [ currentPage, setCurrentPage ] = useState(1);
+    const [ lastPage, setLastPage ] = useState(1);
+    const [ pageSize, setPageSize ] = useState(5);
+
+    const [ totalItemsAmount, setTotalItemsAmount ] = useState(0);
+
+    const [ availableItemsCurrentPage, setAvailableItemsCurrentPage ] = useState(1);
+    const [ availableItemsLastPage, setAvailableItemsLastPage ] = useState(1);
+    const [ availableItemsPageSize, setAvailableItemsPageSize ] = useState(5);
+
+    const [ totalAvailableItemsAmount, setTotalAvailableItemsAmount ] = useState(0);
+
     useEffect(() => {
 
         setObjectService(new ObjectService(baseURL));
@@ -31,9 +46,11 @@ const ManyToMany = ({ baseURL, currentObjectEntryId, currentObjectEntryERC, curr
 
         if(objectService != null) {
 
-            objectService.getRelatedObjectEntries(currentObjectEntryId, currentObjectEntryAPIPath, objectRelationshipName).then(data => {
-                setRelatedObjectEntries(data['actorFeaturingMovie']);
-            })
+            objectService.getRelatedObjectEntries(currentObjectEntryId, currentObjectEntryAPIPath, objectRelationshipName, currentPage, pageSize).then(data => {
+                setRelatedObjectEntries(data.items);
+                setTotalItemsAmount(data.totalCount);
+                setLastPage(data.lastPage);
+            });
 
             objectService.getObjectEntryScopeKey(currentObjectEntryId, currentObjectEntryAPIPath).then(data => {
                 setScopeKey(data);
@@ -41,32 +58,39 @@ const ManyToMany = ({ baseURL, currentObjectEntryId, currentObjectEntryERC, curr
 
         }
 
-    }, [objectService, currentObjectEntryId, currentObjectEntryAPIPath, objectRelationshipName]);
+    }, [objectService, currentObjectEntryId, currentObjectEntryAPIPath, objectRelationshipName, currentPage, pageSize]);
 
     useEffect(() => {
 
         if(objectService != null && scopeKey != null) {
 
-            objectService.getAvailableRelatedObjectEntries(scopeKey, relatedObjectEntryAPIPath).then(data => {
-                setAvailableRelatedObjectEntries(data.items.map((item) => ({ ...item, active: false})))
+            objectService.getAvailableRelatedObjectEntries(scopeKey, relatedObjectEntryAPIPath, availableItemsCurrentPage, availableItemsPageSize).then(data => {
+                const relatedIds = new Set(relatedObjectEntries.map((e) => e.id));
+                setAvailableRelatedObjectEntries(data.items.map((item) => ({ ...item, active: false, alreadyRelated: relatedIds.has(item.id)})))
+                setTotalAvailableItemsAmount(data.totalCount);
+                setAvailableItemsLastPage(data.lastPage);
             })
 
         }
 
-    }, [objectService, scopeKey, relatedObjectEntryAPIPath, addItemToggle]);
+    }, [objectService, scopeKey, relatedObjectEntryAPIPath, addItemToggle, availableItemsCurrentPage, availableItemsPageSize]);
 
     const addSelectedItems = (selected) => {
         objectService.addRelatedObjectEntries(currentObjectEntryId, currentObjectEntryAPIPath, objectRelationshipName, selected.map((item) => item.id)).then(() => {
-            objectService.getRelatedObjectEntries(currentObjectEntryId, currentObjectEntryAPIPath, objectRelationshipName).then(data => {
-                setRelatedObjectEntries(data['actorFeaturingMovie']);
+            objectService.getRelatedObjectEntries(currentObjectEntryId, currentObjectEntryAPIPath, objectRelationshipName, currentPage, pageSize).then(data => {
+                setRelatedObjectEntries(data.items);
+                setTotalItemsAmount(data.totalCount);
+                setLastPage(data.lastPage);
             })
         });
     }
 
     const removeRelatedEntry = (relatedObjectEntryId) => {
         objectService.removeRelatedObjectEntry(currentObjectEntryId, currentObjectEntryAPIPath, objectRelationshipName, relatedObjectEntryId).then(() => {
-            objectService.getRelatedObjectEntries(currentObjectEntryId, currentObjectEntryAPIPath, objectRelationshipName).then(data => {
-                setRelatedObjectEntries(data['actorFeaturingMovie']);
+            objectService.getRelatedObjectEntries(currentObjectEntryId, currentObjectEntryAPIPath, objectRelationshipName, currentPage, pageSize).then(data => {
+                setRelatedObjectEntries(data.items);
+                setTotalItemsAmount(data.totalCount);
+                setLastPage(data.lastPage);
             })
         });
     }
@@ -81,6 +105,12 @@ const ManyToMany = ({ baseURL, currentObjectEntryId, currentObjectEntryERC, curr
                 addItem={null}
                 addItemToggle={addItemToggle}
                 setAddItemToggle={setAddItemToggle}
+                availableItemsCurrentPage={availableItemsCurrentPage}
+                setAvailableItemsCurrentPage={setAvailableItemsCurrentPage}
+                availableItemsLastPage={availableItemsLastPage}
+                availableItemsPageSize={availableItemsPageSize}
+                setAvailableItemsPageSize={setAvailableItemsPageSize}
+                totalAvailableItemsAmount={totalAvailableItemsAmount}
             />
 
             <Toolbar>
@@ -110,6 +140,12 @@ const ManyToMany = ({ baseURL, currentObjectEntryId, currentObjectEntryERC, curr
                         <List.ItemField>
                             <List.QuickActionMenu>
                                 <List.QuickActionMenu.Item
+                                    aria-label="Edit"
+                                    title="Edit"
+                                    href={`/c/cms/edit_content_item?objectEntryId=${entry.id}&redirect=${document.location.pathname + document.location.search}`}
+                                    symbol="pencil"
+                                />                                                          
+                                <List.QuickActionMenu.Item
                                     aria-label="Delete"
                                     title="Delete"
                                     onClick={(event) => {
@@ -123,6 +159,28 @@ const ManyToMany = ({ baseURL, currentObjectEntryId, currentObjectEntryERC, curr
                     </List.Item>
                 ))}
             </List>
+            <PaginationBar>
+                <PaginationBar.DropDown
+                items={[5, 10, 20, 50].map((n) => ({
+                    label: String(n),
+                    onClick: () => setPageSize(n),
+                }))}
+                trigger={
+                    <ClayButton displayType="unstyled">
+                        {pageSize} items per page <Icon symbol="caret-double-l" />
+                    </ClayButton>
+                }
+                />
+
+                <PaginationBar.Results>Listing {totalItemsAmount} Items</PaginationBar.Results>
+
+                <ClayPaginationWithBasicItems
+                    active={currentPage}
+                    onActiveChange={(page) => {setCurrentPage(page)}}
+                    ellipsisProps={{ "aria-label": "More", title: "More" }}
+                    totalPages={lastPage}
+                />
+            </PaginationBar>           
         </ClayIconSpriteContext.Provider>        
     );
 };

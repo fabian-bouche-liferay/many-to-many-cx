@@ -15,18 +15,18 @@ class ObjectService {
         );
     }
 
-    getRelatedObjectEntries(objectEntryId, objectDefinitionAPIPath, relationshipName) {
+    getRelatedObjectEntries(objectEntryId, objectDefinitionAPIPath, relationshipName, page, pageSize) {
 
-        return ApiService.makeCall(this.baseURL + `${objectDefinitionAPIPath}/${objectEntryId}?fields=${relationshipName}&nestedFields=${relationshipName}`, "GET")
+        return ApiService.makeCall(this.baseURL + `${objectDefinitionAPIPath}/${objectEntryId}/${relationshipName}?page=${page}&pageSize=${pageSize}`, "GET")
             .then(data => {
                 return data;
             }
         );
     }
 
-    getAvailableRelatedObjectEntries(scopeKey, relatedObjectDefinitionAPIPath) {
+    getAvailableRelatedObjectEntries(scopeKey, relatedObjectDefinitionAPIPath, page, pageSize) {
 
-        return ApiService.makeCall(this.baseURL + `${relatedObjectDefinitionAPIPath}/scopes/${scopeKey}/?fields=title,id`, "GET")
+        return ApiService.makeCall(this.baseURL + `${relatedObjectDefinitionAPIPath}/scopes/${scopeKey}/?fields=title,id&page=${page}&pageSize=${pageSize}`, "GET")
             .then(data => {
                 return data;
             }
