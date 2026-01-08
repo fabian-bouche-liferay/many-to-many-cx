@@ -6,6 +6,8 @@ manage many-to-many relationships between them.
 For example, you manage a movie database and you have a many-to-many
 relationship between **Movies** and **Actors**.
 
+![Image Binding contents with a many to many relationship](https://github.com/fabian-bouche-liferay/many-to-many-cx/edit/master/manytomany.gif)
+
 ## Settings things up
 
 In 2025.Q4, you cannot create the many-to-many relationship from
