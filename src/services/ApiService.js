@@ -20,7 +20,7 @@ class ApiService {
             });
 
         return call.then(data => {
-            console.log(data);
+            //console.log(data);
             return data;
         });
 

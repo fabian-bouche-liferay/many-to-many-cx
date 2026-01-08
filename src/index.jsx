@@ -44,7 +44,6 @@ class ManyToManyWebComponent extends HTMLElement {
 
     _getPropsFromAttributes() {
         return {
-            scopeKey: this.getAttribute("scope-key"),
             currentObjectEntryERC: this.getAttribute("current-object-entry-erc"),
             currentObjectEntryId: this.getAttribute("current-object-entry-id"),
             currentObjectEntryAPIPath: this.getAttribute("current-object-entry-api-path"),

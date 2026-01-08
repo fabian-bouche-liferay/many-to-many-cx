@@ -11,13 +11,15 @@ import '@clayui/css/lib/css/atlas.css';
 import ObjectService from "./services/ObjectService";
 import AddItemModal from "./AddItemModal";
 
-const ManyToMany = ({ baseURL, scopeKey, currentObjectEntryId, currentObjectEntryERC, currentObjectEntryAPIPath, relatedObjectEntryAPIPath, objectRelationshipName }) => {
+const ManyToMany = ({ baseURL, currentObjectEntryId, currentObjectEntryERC, currentObjectEntryAPIPath, relatedObjectEntryAPIPath, objectRelationshipName }) => {
 
     const [ objectService, setObjectService ] = useState(null);
     const [ addItemToggle, setAddItemToggle ] = useState(false);
     
     const [ availableRelatedObjectEntries, setAvailableRelatedObjectEntries ] = useState([]);
     const [ relatedObjectEntries, setRelatedObjectEntries ] = useState([]);
+
+    const [ scopeKey, setScopeKey ] = useState(null);
 
     useEffect(() => {
 
@@ -33,13 +35,17 @@ const ManyToMany = ({ baseURL, scopeKey, currentObjectEntryId, currentObjectEntr
                 setRelatedObjectEntries(data['actorFeaturingMovie']);
             })
 
+            objectService.getObjectEntryScopeKey(currentObjectEntryId, currentObjectEntryAPIPath).then(data => {
+                setScopeKey(data);
+            });
+
         }
 
     }, [objectService, currentObjectEntryId, currentObjectEntryAPIPath, objectRelationshipName]);
 
     useEffect(() => {
 
-        if(objectService != null) {
+        if(objectService != null && scopeKey != null) {
 
             objectService.getAvailableRelatedObjectEntries(scopeKey, relatedObjectEntryAPIPath).then(data => {
                 setAvailableRelatedObjectEntries(data.items.map((item) => ({ ...item, active: false})))
@@ -77,45 +83,46 @@ const ManyToMany = ({ baseURL, scopeKey, currentObjectEntryId, currentObjectEntr
                 setAddItemToggle={setAddItemToggle}
             />
 
-            <div className="p-4">
-				<Toolbar>
-					<Toolbar.Nav>
-						<Toolbar.Item className="text-left" expand>
-						</Toolbar.Item>
+            <Toolbar>
+                <Toolbar.Nav>
+                    <Toolbar.Item className="text-left" expand>
+                    </Toolbar.Item>
 
-						<Toolbar.Item>
-							<Toolbar.Section>
-                                <ClayButtonWithIcon
-                                    aria-label="Add Item"
-                                    symbol="plus"
-                                    title="Add Item"
-                                    onClick={() => {setAddItemToggle(true)}}
+                    <Toolbar.Item>
+                        <Toolbar.Section>
+                            <ClayButtonWithIcon
+                                aria-label="Add Item"
+                                symbol="plus"
+                                title="Add Item"
+                                onClick={() => {setAddItemToggle(true)}}
+                            />
+                        </Toolbar.Section>
+                    </Toolbar.Item>
+
+                </Toolbar.Nav>
+            </Toolbar>                
+            <List className="mt-4" showQuickActionsOnHover>
+                {relatedObjectEntries.map((entry) => (
+                    <List.Item key={entry.id} flex>
+                        <List.ItemField expand>
+                            <List.ItemTitle>{entry.title}</List.ItemTitle>
+                        </List.ItemField>
+                        <List.ItemField>
+                            <List.QuickActionMenu>
+                                <List.QuickActionMenu.Item
+                                    aria-label="Delete"
+                                    title="Delete"
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        removeRelatedEntry(entry.id);
+                                    }}
+                                    symbol="trash"
                                 />
-							</Toolbar.Section>
-						</Toolbar.Item>
-
-					</Toolbar.Nav>
-				</Toolbar>                
-				<List className="mt-4" showQuickActionsOnHover>
-                    {relatedObjectEntries.map((entry) => (
-                        <List.Item key={entry.id} flex>
-                            <List.ItemField expand>
-                                <List.ItemTitle>{entry.title}</List.ItemTitle>
-                            </List.ItemField>
-                            <List.ItemField>
-                                <List.QuickActionMenu>
-                                    <List.QuickActionMenu.Item
-                                        aria-label="Delete"
-                                        title="Delete"
-                                        onClick={() => removeRelatedEntry(entry.id)}
-                                        symbol="trash"
-                                    />
-                                </List.QuickActionMenu>
-                            </List.ItemField>
-                        </List.Item>
-                    ))}
-				</List>
-			</div>
+                            </List.QuickActionMenu>
+                        </List.ItemField>
+                    </List.Item>
+                ))}
+            </List>
         </ClayIconSpriteContext.Provider>        
     );
 };
